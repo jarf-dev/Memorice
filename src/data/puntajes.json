@@ -1,0 +1,5 @@
+[
+  { "name": "Mario","category":0, "score": 19, "time": 235624 },
+  { "name": "Zelda", "category":15,"score": 15, "time": 335624 },
+  { "name": "AAA", "category":18, "score": 10, "time": 515624 }
+]

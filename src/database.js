@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 mongoose
-  .connect(process.env.MONGODB_URI || "mongodb://localhost/jarfDB", {
+  .connect(process.env.MONGODB_URI || "mongodb://localhost/DB", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

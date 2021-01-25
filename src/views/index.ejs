@@ -1,15 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <!-- Global headers -->
-    <%- include('components/head.ejs'); %>
-    <title>Document</title>
-  </head>
-<!-- Main content -->
-  <body>
-    
+<!-- Global headers -->
+<%- include('components/_head.ejs'); %>
+<div class="row">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-body">
+        <h1>Hey! Ready for a challenge?</h1>
+        <form class = "needs-validation" action="/startQuiz" method="post" novalidate>
+          <div class="form-group">
+            <label for="name" class="form-label">How you will be remembered...</label>
+            <input id="formName" type="text" class="form-control" name="name" placeholder="your name goes here" required>
+            <div class="invalid-feedback">
+              please! don't be modest...a nickname may work as well...
+            </div>
+          </div>
+          <br>
+          <div class="form-group">
+            <label for="category" class="form-label">And which category would you like to play?</label>
+            <select id="formCategory" class="form-select" name="category" required>
+              <option selected disabled value="">Pick a question category...</option>
+              <% for (var i=0;i< categorias.length;i++){%>
+                <option value="<%= categorias[i].order%>"><%= categorias[i].category%></option>
+                <%}%>
+            </select>
+            <div class="invalid-feedback">
+              sorry but we really need this information in order to set the game
+            </div>
+          </div>
+          <br>
+          <button type="submit" class="btn btn-primary">Let's go!</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <!-- Script section -->
-    <script></script>
-  </body>
-</html>
+<!-- Script section -->
+<script>
+// this code is needed for Bootstrap 5 to apply form validation
+(function () {
+  'use strict'
+  var forms = document.querySelectorAll('.needs-validation')
+  Array.prototype.slice.call(forms)
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+    })
+})()
+
+</script>
+
+<!-- Global footers -->
+<%- include('components/_footer.ejs'); %>
