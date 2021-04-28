@@ -1,58 +1,51 @@
 <!-- Global headers -->
 <%- include('components/_head.ejs'); %>
-<div class="row">
-  <div class="col-md-5">
-    <div class="card">
-      <div class="card-body">
-        <h1>Hey! Ready for a challenge?</h1>
-        <form class = "needs-validation" action="/startQuiz" method="post" novalidate>
-          <div class="form-group">
-            <label for="name" class="form-label">How you will be remembered...</label>
-            <input id="formName" type="text" class="form-control" name="name" placeholder="your name goes here" required>
-            <div class="invalid-feedback">
-              please! don't be modest...a nickname may work as well...
-            </div>
+<!-- Global headers -->
+
+<!-- HTML app body -->
+<div class="container">
+  <!-- Pre game form -->
+  <div class="card">
+    <div class="card-body">
+      <form class="needs-validation" action="/startQuiz" method="POST" novalidate>
+        <div class="form-group">
+          <label for="name" class="form-label">How you will be remembered...</label>
+          <input
+            id="formName"
+            type="text"
+            class="form-control"
+            name="name"
+            placeholder="your name goes here"
+            required
+          />
+          <div class="invalid-feedback">
+            please! don't be modest...a nickname may works as well...
           </div>
-          <br>
-          <div class="form-group">
-            <label for="category" class="form-label">And which category would you like to play?</label>
-            <select id="formCategory" class="form-select" name="category" required>
-              <option selected disabled value="">Pick a question category...</option>
-              <% for (var i=0;i< categorias.length;i++){%>
-                <option value="<%= categorias[i].order%>"><%= categorias[i].category%></option>
-                <%}%>
-            </select>
-            <div class="invalid-feedback">
-              sorry but we really need this information in order to set the game
-            </div>
+        </div>
+        <br />
+        <div class="form-group">
+          <label for="category" class="form-label">Choose a difficult</label>
+          <select id="formCategory" class="form-select" name="category" required>
+            <option selected disabled value="">Pick up your category...</option>
+            <option value="4">Easy: 4x4 Matrix</option>
+            <option value="6">Medium: 6x6 Matrix</option>
+            <option value="8">Hard: 8x8 Matrix</option>
+          </select>
+          <div class="invalid-feedback">
+            sorry but we really need this information in order to set the game up
           </div>
-          <br>
-          <button type="submit" class="btn btn-primary">Let's go!</button>
-        </form>
-      </div>
+        </div>
+        <br />
+        <button type="submit" class="btn btn-primary">Let's go!</button>
+      </form>
     </div>
   </div>
 </div>
+<!-- HTML app body -->
 
 <!-- Script section -->
-<script>
-// this code is needed for Bootstrap 5 to apply form validation
-(function () {
-  'use strict'
-  var forms = document.querySelectorAll('.needs-validation')
-  Array.prototype.slice.call(forms)
-    .forEach(function (form) {
-      form.addEventListener('submit', function (event) {
-        if (!form.checkValidity()) {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-        form.classList.add('was-validated')
-      }, false)
-    })
-})()
-
-</script>
-
+<script></script>
+<!-- Script section -->
 <!-- Global footers -->
 <%- include('components/_footer.ejs'); %>
+<!-- Global footers -->

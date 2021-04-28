@@ -2,95 +2,62 @@
 <%- include('components/_head.ejs'); %>
 <!-- Global headers -->
 
+<!-- Main interface -->
 <div class="container">
-  <div class="row">
-    <div class="col-md-6">
-      <div class="row">
-        <div class="col-md-4">
-          <h3>Player: <%- playerData.name%></h3>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-4">
-          <h6 id="timeCounter">Go!</h6>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-4">
-          <button
-            type="button"
-            class="btn btn-primary"
-            id="checkRanking1"
-            style="display: none"
-            data-bs-toggle="modal"
-            data-bs-target="#staticBackdrop"
-          >
-            Check the ranking
-          </button>
+  <!-- Player data -->
+  <div class="container-playerData">
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="row">
+              <h3>Player: <%- playerData.name%></h3>
+            </div>
+            <div class="row">
+              <h6 id="timeCounter">Go!</h6>
+            </div>
+            <div class="row">
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="checkRanking1"
+                style="display: none"
+                data-bs-toggle="modal"
+                data-bs-target="#staticBackdrop"
+              >
+                Check the ranking again
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <br />
-  <div class="row">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-body">
-          <form action="" method="" novalidate>
-            <div id="questionList">
-              <% for(var i=0;i< questionsSet.length; i++ ){%>
-              <div class="card">
-                <div class="card-body">
-                  <div class="quiz-question">
-                    <h5>#<%-[i+1]%>: <%-questionsSet[i].question%></h5>
-                    <% for(var j=0;j< questionsSet[i].alternatives.length; j++)
-                    {%>
-                    <div class="form-check" id="border-q<%=[i]%>-a<%=[j]%>">
-                      <input
-                        class="form-check-input"
-                        type="radio"
-                        name="<%=[i]%>"
-                        id="q<%=[i]%>-a<%=[j]%>"
-                        value="<%=questionsSet[i].alternatives[j].value%>"
-                      />
-                      <label class="form-check-label" for="q<%=[i]%>-a<%=[j]%>"
-                        ><%=questionsSet[i].alternatives[j].value%></label
-                      >
-                    </div>
-                    <%}%>
-                  </div>
-                </div>
-              </div>
-              <br />
-              <%}%>
-            </div>
+  <!-- Playground -->
+  <div class="container-playGround">
+    <div class="card">
+      <div class="card-body">
+        <div class="p-3 bg-light">
+          <table class="table table-bordered">
+            <tbody>
+              <% for (var i=0;i< category;i++){%>
+              <tr>
+                <% for (var j=0;j< category;j++){%>
+                <td>
 
-            <div class="buttonSection">
-              <div class="card">
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  id="submitButton"
-                  onclick="checkOutQuiz(this.id)"
-                  data-bs-toggle="modal"
-                  data-bs-target="#staticBackdrop"
-                >
-                  Submit my answers
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  id="checkRanking2"
-                  style="display: none"
-                  data-bs-toggle="modal"
-                  data-bs-target="#staticBackdrop"
-                >
-                  Check the ranking
-                </button>
-              </div>
-            </div>
-          </form>
+                  <div class="scene scene--card">
+                    <div class="card-flipper" onclick="flipCard(this.id)" id="pic-<%-[j+i*category]%>">
+                      <div class="card__face card__face--front"></div>
+                      <div class="card__face card__face--back"><img src="<%-pictureSet[j+i*category].urlPicture%>" style="width: 200px; height: 200px"/></div>
+                    </div>
+                  </div>
+                </td>
+                <%}%>
+              </tr>
+              <%}%>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -136,21 +103,23 @@
               <tr>
                 <th>#</th>
                 <th>Player</th>
-                <th>Score</th>
+                <th>Category</th>
+                <th>Wrong ones</th>
                 <th>Time</th>
               </tr>
             </thead>
             <tbody>
               <% for(var i=0;i< rankList.length; i++ ){%>
-              <tr>
-                <td><%-[i+1]%></td>
-                <td><%-rankList[i].name%></td>
-                <td><%-rankList[i].score%></td>
-                <td>
-                  <%-new Date(rankList[i].time).toISOString().substring(11,19)%>
-                </td>
-              </tr>
-              <%}%>
+                <tr>
+                  <td><%-[i+1]%></td>
+                  <td><%-rankList[i].name%></td>
+                  <td><%-rankList[i].category%>x<%-rankList[i].category%></td>
+                  <td><%-rankList[i].score%></td>
+                  <td>
+                    <%-new Date(rankList[i].time).toISOString().substring(11,19)%>
+                  </td>
+                </tr>
+                <%}%>
             </tbody>
           </table>
         </div>
@@ -173,94 +142,107 @@
 <!-- Script section -->
 <script>
 
-  // Set initials variables
-  var stopCounter=false;
-  var gameTime=0;
+// Set initials variables
+var stopCounter = false;
+var gameTime = 0;
+
+const playerPerformance={"matched":0,"failed":0};
+var tempResults=[];
+
 
   // Start when DOM is loaded
-  document.addEventListener("DOMContentLoaded", function(event) {
+  document.addEventListener("DOMContentLoaded", function (event) {
     // Initiate time counting
     timeCounter();
   });
 
-    function checkOutQuiz(buttonId){
-
-      // Disable submit button
-      button=document.getElementById(buttonId);
-      button.disabled=true;
-
-      // Turn off time counter
-      stopCounter=true;
-
-      // Check player answers and save results
-      quizTime=gameTime;
-      quizScore=checkAnswers();
-      playerName=<%-JSON.stringify(playerData.name)%>
-
-      // Save player score
-      saveResults(playerName,quizTime,quizScore);
-
-      // Scroll back to the beginning
-      window.scrollTo(0,0);
-
-      document.getElementById("checkRanking1").style.display = "block";
-      document.getElementById("checkRanking2").style.display = "block";
-
-      }
-
-  // Check answers and mark correct alternatives
-    function checkAnswers(){
-      var score=0;
-      var correctAnswers=<%- JSON.stringify(questionsRef)%>;
-        var questionList=document.getElementById("questionList").getElementsByClassName('quiz-question');
-
-        for (var i = 0; i < questionList.length; i++) {
-          var alternatives=questionList[i].getElementsByClassName('form-check');
-
-          for (var j=0; j < alternatives.length; j++){
-            var alternativeHTML=alternatives[j].getElementsByClassName('form-check-input')[0]
-            var alternativeValue=alternativeHTML.value;
-          if(alternativeValue==correctAnswers[i].correct_answer){
-            alternatives[j].className+=" border border-success"
-          }
-
-          // Check if the selected alternative is correct
-          if (alternativeHTML.checked){
-            if(alternativeValue==correctAnswers[i].correct_answer){
-              // count correct answer
-              score+=1;
-
-            } else {
-              // apply a red border
-              alternatives[j].className+=" border border-danger";
-            }
-          }
-          }
-      }
-
-      return score;
-    }
-
   // Count and update time counter element
-    function timeCounter(){
-      var startTime=new Date().getTime();
-      var counter=setInterval(()=>{
-        if(stopCounter){
-          clearInterval(counter);
-        }else{
-          var now=new Date().getTime();
-          var diffTime=now - startTime;
-          var lastingTime=new Date(diffTime).toISOString().substring(11,19);
-          document.getElementById("timeCounter").innerHTML=lastingTime;
-          gameTime=diffTime;
-        }
+  function timeCounter() {
+    var startTime = new Date().getTime();
+    var counter = setInterval(() => {
+      if (stopCounter) {
+        clearInterval(counter);
+      } else {
+        var now = new Date().getTime();
+        var diffTime = now - startTime;
+        var lastingTime = new Date(diffTime).toISOString().substring(11, 19);
+        document.getElementById("timeCounter").innerHTML = lastingTime;
+        gameTime = diffTime;
       }
-      ,1000)
+    }, 1000);
+  }
+
+function flipCard(id){
+  var imgElem = document.getElementById(id);
+  if(!imgElem.className.includes('is-flipped')){
+  // Slip the card to show its pictures
+  imgElem.classList.toggle('is-flipped');
+  
+  // Apply a 1.5 sec delay to allow player in case of wrong pair
+  setTimeout(()=>{resultComparition(id)},1500)
+  // resultComparition(id)
+}
+}
+
+  function resultComparition(id){
+    var imgElem = document.getElementById(id);
+    imgURL=imgElem.getElementsByTagName("img")[0].src;
+    tempResults.push({id:id,imgURL:imgURL});
+    
+    if(tempResults.length==2){
+      if(tempResults[0].imgURL==tempResults[1].imgURL){
+        // Send feedback about correct match
+        playerPerformance.matched+=1;
+
+        var gameLimit=<%- pictureSet.length %>/2
+
+        if(playerPerformance.matched==gameLimit){
+          
+          var quizScore=playerPerformance.failed;
+          finishGame(quizScore);
+        }        
+
+      } else{
+        // Send feedback about wrong match
+        playerPerformance.failed+=1;
+
+        // tempResults.map(elem=>{
+        // var imgElem = document.getElementById(elem.id);
+        // imgElem.setAttribute("style","border: 5px solid red;");
+        // })
+
+        // Flip back both cards
+        tempResults.map(elem=>{
+        var imgElem = document.getElementById(elem.id);
+        imgElem.classList.toggle('is-flipped');
+        })
+        
+
+      }
+      tempResults=[];
     }
+  }
 
-  // Save game results
-  function saveResults(playerName,quizTime,quizScore){
+  function finishGame(quizScore){
 
+    // Turn off time counter
+    stopCounter=true;
+
+    // Scroll back to the beginning
+    window.scrollTo(0,0);
+    document.getElementById("checkRanking1").style.display = "block";
+
+    var playerName=<%- JSON.stringify(playerData.name)%>;
+    var quizTime=gameTime;
+    var category=<%-category%>;
+
+    saveResults(playerName,quizTime,quizScore,category)
+
+    var resultModal=new bootstrap.Modal(document.getElementById("staticBackdrop"),{backdrop:'static',keyboard: false});
+    resultModal.toggle();
+  }
+
+  function saveResults(playerName,quizTime,quizScore,category){
 
     // Setting http requests
     let xhr = new XMLHttpRequest();
@@ -272,23 +254,24 @@
     reqBody.playerName=playerName;
     reqBody.quizTime=quizTime;
     reqBody.quizScore=quizScore;
+    reqBody.category=category;
 
     xhr.onload = () => {};
 
     xhr.send(JSON.stringify(reqBody));
 
     // Set player run info on results modal
-    document.getElementById("playerScore").innerHTML='Your score: ' + quizScore + '/20'
-    document.getElementById("playerTime").innerHTML='Your time: ' + new Date(quizTime).toISOString().substring(11,19);
+    document.getElementById("playerScore").innerHTML="You've mistaken: " + quizScore + ' times'
+    document.getElementById("playerTime").innerHTML='Your time was: ' + new Date(quizTime).toISOString().substring(11,19);
+  }
 
-   }
 
-  function reloadPage(){
+  function reloadPage() {
     location.reload();
   }
 
-  function goToSelection(){
-    window.location.href='/';
+  function goToSelection() {
+    window.location.href = "/";
   }
 </script>
 

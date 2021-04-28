@@ -16,5 +16,9 @@ services:
     image: mongo
     ports: 
       - "27018:27017"
+    volumens:
+      - ./deploy/mongoose/data:/data
+    command:
+      ./deploy/import.sh
     logging: 
       driver: none

@@ -1,73 +1,64 @@
 const router = require("express").Router();
 const fetch = require("node-fetch");
 
-const Categories = require("../models/categorias");
-const Puntajes = require("../models/puntajes");
+const Scores = require("../models/scores");
 
 router.get("/", async (req, res) => {
-  const categorias = await Categories.find();
-  res.render("index", { categorias });
+  res.render("index");
 });
 
-router.post("/startQuiz", async (req, res) => {
-  // Get data from the just registered player
-  const playerData = new Puntajes(req.body);
-  const category = req.body.category;
 
-  // Question are obtained from Open Trivia Database (https://opentdb.com/api_config.php)
-  var resAPIQuiz = await fetch(
-    `https://opentdb.com/api.php?amount=20&type=multiple&category=${category}`
-  )
+router.post("/startQuiz", async (req,res) => {
+
+  // Get data from the just registered player
+  const playerData = new Scores(req.body);
+  const category = req.body.category;
+  const picturesToAsk=category*category/2
+
+  // Pictures are obtained from TheCatApi Database (https://docs.thecatapi.com)
+  var jsonRes = await fetch(`https://api.thecatapi.com/v1/images/search?mime_types=jpg,png&limit=${picturesToAsk}&size=medium`)
     .then((res) => res.json())
     .catch((e) => console.error(e));
-
-  const jsonRes = resAPIQuiz.results;
-
-  // Set question and alternatives all together
-  const questionsSet = [];
+  
+  // Generate image array, looping twice to create pairs
+  const pictureSet = [];
   jsonRes.forEach((elem) =>
-    questionsSet.push({
-      question: elem.question,
-      alternatives: elem.incorrect_answers
-        .concat(elem.correct_answer)
-        .map((value) => {
-          return { order: Math.random(), value: value };
-        }),
-    })
+    pictureSet.push({order:Math.random(),urlPicture: elem.url})
   );
+  jsonRes.forEach((elem) =>
+  pictureSet.push({order:Math.random(),urlPicture: elem.url})
+);
 
-  // Sort randomly alternatives
-  questionsSet.map((set) => {
-    set.alternatives.sort((a, b) => b.order - a.order);
+  // Apply random sorting for pictures
+  pictureSet.sort((a,b)=>b.order-a.order)
+
+  // Get pass other players records and rank these by score
+  // Sorting criteria: first come category (desc) and after amount of mistakes (asc)
+  var rankList = await Scores.find();
+  rankList.sort((a, b) => {
+    if(a.category == b.category){
+      return a.score - b.score;
+    }
+    return b.category - a.category;
   });
 
-  // Save the question an correct answer for comparision
-  const questionsRef = [];
-  jsonRes.forEach((elem) =>
-    questionsRef.push({
-      question: elem.question,
-      correct_answer: elem.correct_answer,
-    })
-  );
+  res.render("quiz",{playerData,pictureSet,category,rankList})
+})
 
-  // Get pass players records and rank these by score
-  var rankList = await Puntajes.find();
-  rankList.sort((a, b) => b.score - a.score);
 
-  // Render quiz page, pass player data and questions
-  res.render("quiz", { playerData, questionsSet, questionsRef, rankList });
-});
 
 router.post("/checkQuiz", async (req, res) => {
+
   // Recieve data from quiz page
   var gameRecords = Object.assign({}, []);
   gameRecords.name = req.body.playerName;
   gameRecords.time = req.body.quizTime;
   gameRecords.score = req.body.quizScore;
+  gameRecords.category = req.body.category;
 
   // Save current run records in database
   try {
-    const newRecord = new Puntajes(gameRecords);
+    const newRecord = new Scores(gameRecords);
     await newRecord.save();
 
     // Send back to results page, pass player data and answers
